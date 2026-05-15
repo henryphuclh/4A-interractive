@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Step 4A — EU Position Against CRMA 2030 Targets</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #F4F6F9;
+    color: #1a1a2e;
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .page-header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 6px;
+  }
+  .page-header p {
+    font-size: 13px;
+    color: #666;
+  }
+
+  /* ── Tab bar ── */
+  .tab-bar {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .tab-btn {
+    padding: 8px 22px;
+    border-radius: 24px;
+    border: 1.5px solid #ddd;
+    background: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    color: #555;
+    transition: all 0.18s;
+  }
+  .tab-btn:hover { border-color: #aaa; color: #222; }
+  .tab-btn.active {
+    color: #fff;
+    border-color: transparent;
+  }
+
+  /* ── Summary cards ── */
+  .cards-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px 18px;
+    border: 1px solid #e8e8e8;
+  }
+  .card-label {
+    font-size: 11px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+  .card-value {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .card-sub { font-size: 12px; color: #888; margin-bottom: 8px; }
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 4px;
+  }
+  .badge-green { background: #E8F5E9; color: #2E7D32; }
+  .badge-red   { background: #FFEBEE; color: #C62828; }
+  .badge-amber { background: #FFF8E1; color: #E65100; }
+
+  /* ── Chart + bars layout ── */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .panel {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid #e8e8e8;
+  }
+  .panel-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .chart-wrap {
+    position: relative;
+    width: 100%;
+    height: 280px;
+  }
+
+  /* ── Mineral bars ── */
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 5px;
+  }
+  .bar-mineral {
+    width: 140px;
+    font-size: 12px;
+    color: #444;
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .bar-track {
+    flex: 1;
+    height: 9px;
+    background: #F0F0F0;
+    border-radius: 5px;
+    overflow: visible;
+    position: relative;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.4s ease;
+  }
+  .bar-target-line {
+    position: absolute;
+    top: -3px;
+    width: 2px;
+    height: 15px;
+    background: #666;
+    opacity: 0.5;
+    border-radius: 1px;
+  }
+  .bar-val {
+    width: 38px;
+    text-align: right;
+    font-size: 11.5px;
+    font-weight: 600;
+  }
+  .bar-tick {
+    width: 18px;
+    text-align: center;
+    font-size: 12px;
+  }
+
+  /* ── Legend ── */
+  .legend-row {
+    display: flex;
+    gap: 16px;
+    font-size: 11px;
+    color: #888;
+    margin-top: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .legend-swatch {
+    width: 12px; height: 12px; border-radius: 2px;
+  }
+
+  /* ── Data note ── */
+  .data-note {
+    background: #FFFDE7;
+    border-left: 3px solid #F9A825;
+    border-radius: 0 8px 8px 0;
+    padding: 10px 14px;
+    font-size: 11.5px;
+    color: #555;
+    line-height: 1.6;
+    margin-top: 4px;
+  }
+
+  /* ── Custom legend for chart ── */
+  .chart-legend {
+    display: flex;
+    gap: 16px;
+    font-size: 11px;
+    color: #666;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .cl-item { display: flex; align-items: center; gap: 5px; }
+  .cl-line {
+    width: 20px; height: 2px; border-radius: 1px;
+  }
+  .cl-line-dashed {
+    width: 20px; height: 0;
+    border-top: 2px dashed #888;
+  }
+  .cl-line-dot {
+    width: 20px; height: 0;
+    border-top: 2px dotted #888;
+  }
+
+  @media (max-width: 700px) {
+    .cards-row { grid-template-columns: 1fr 1fr; }
+    .main-grid { grid-template-columns: 1fr; }
+    .bar-mineral { width: 100px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Step 4A — EU Current Position Against CRMA 2030 Targets</h1>
+  <p>Approach B: available sample per year &nbsp;|&nbsp; Sources: Eurostat CEI_GSR020 &amp; EC CRM Assessments 2014–2023</p>
+</div>
+
+<!-- Tab bar -->
+<div class="tab-bar" id="tabBar"></div>
+
+<!-- Summary cards -->
+<div class="cards-row" id="summaryCards"></div>
+
+<!-- Charts -->
+<div class="main-grid">
+  <div class="panel">
+    <div class="panel-title" id="trendTitle">Trend over time</div>
+    <div class="chart-legend" id="chartLegend">
+      <div class="cl-item"><div class="cl-line" id="legendLine"></div><span>EU average (%)</span></div>
+      <div class="cl-item"><div class="cl-line-dashed"></div><span>Compliance rate (right axis)</span></div>
+      <div class="cl-item"><div class="cl-line-dot"></div><span>CRMA target</span></div>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="trendChart" role="img" aria-label="Trend chart"></canvas>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Per-mineral breakdown — latest available year</div>
+    <div id="mineralBars" style="max-height:320px; overflow-y:auto; padding-right:4px;"></div>
+    <div class="legend-row" id="barLegend"></div>
+  </div>
+</div>
+
+<!-- Data note -->
+<div class="data-note" id="dataNote"></div>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+// DATA
+// ─────────────────────────────────────────────────────────────
+const DIMS = {
+  extraction: {
+    label: 'Extraction', fullLabel: 'Extraction self-sufficiency',
+    unit: '%', target: 10, targetLabel: '≥ 10%',
+    direction: 'higher', color: '#378ADD', bgColor: '#EAF3FB',
+    years: [2011,2012,2013,2014,2015,2016,2017,2018,2022],
+    avg:   [15.6,16.2,17.4,16.8,17.3,17.2,17.1,17.2,22.9],
+    n:     [15,15,15,15,15,15,15,15,16],
+    comp:  [40.0,46.7,46.7,40.0,40.0,46.7,40.0,33.3,50.0],
+    minerals: [
+      ['Limestone',100],['Vanadium',100],['Copper',52],['Fluorspar',40],
+      ['Iron',23],['Cobalt',19],['Lithium',19],['Aluminium',11],
+      ['Tantalum',1],['Nat. graphite',1],['Borate/Boron',0],
+      ['Dysprosium',0],['Europium',0],['Molybdenum',0],
+      ['Neodymium',0],['Yttrium',0],
+    ],
+    note: 'Source: Eurostat CEI_GSR020. n = 16 minerals in 2022 (consistent panel 2011–2022). Target: ≥ 10% per mineral.',
+  },
+  processing: {
+    label: 'Processing', fullLabel: 'Processing self-sufficiency',
+    unit: '%', target: 40, targetLabel: '≥ 40%',
+    direction: 'higher', color: '#1D9E75', bgColor: '#E6F5EF',
+    years: [2011,2012,2013,2014,2015,2016,2017,2018,2022],
+    avg:   [34.8,36.4,36.4,36.2,32.9,26.3,26.0,27.2,28.3],
+    n:     [20,20,20,20,20,20,20,20,19],
+    comp:  [35.0,40.0,40.0,40.0,35.0,30.0,30.0,30.0,31.6],
+    minerals: [
+      ['Cobalt',99],['Iron',94.9],['Indium',89],['Copper',83],
+      ['Germanium',58],['Aluminium',42],['Silicon',36],['Borate/Boron',30],
+      ['Platinum',3.9],['Gallium',2],['Dysprosium',0],['Europium',0],
+      ['Lithium',0],['Magnesium',0],['Molybdenum',0],
+      ['Neodymium',0],['Phosphorus',0],['Vanadium',0],['Yttrium',0],
+    ],
+    note: 'Source: Eurostat CEI_GSR020. n = 19 minerals in 2022. ⚠ Average declining: 34.8% (2011) → 28.3% (2022) — moving away from the 40% target.',
+  },
+  recycling: {
+    label: 'Recycling', fullLabel: 'Recycling rate (EOL-RIR)',
+    unit: '%', target: 25, targetLabel: '≥ 25%',
+    direction: 'higher', color: '#BA7517', bgColor: '#FEF3E2',
+    years: [2015,2016,2017,2018,2022],
+    avg:   [9.3,9.3,9.3,9.3,6.1],
+    n:     [49,49,49,49,51],
+    comp:  [14.3,14.3,14.3,14.3,7.8],
+    minerals: [
+      ['Copper',55],['Tungsten',42],['Aluminium',32],['Antimony',28],
+      ['Cobalt',22],['Nickel',16],['Magnesium',13],['Iridium',12],
+      ['Palladium',12],['Platinum',12],['Rhodium',12],['Ruthenium',12],
+      ['Manganese',9],['Vanadium',6],['Nat. graphite',3],
+      ['Helium',2],['Germanium',2],['Lithium',0],
+    ],
+    note: 'Source: EC CRM Assessments 2017 & 2023. Years 2015–2018 mapped to 2017 assessment; 2022 mapped to 2023 assessment. ⚠ No data before 2015.',
+  },
+  monopoly: {
+    label: 'Monopoly risk', fullLabel: 'Top supplier market share',
+    unit: '%', target: 65, targetLabel: '≤ 65%',
+    direction: 'lower', color: '#D85A30', bgColor: '#FEF0EB',
+    years: [2011,2012,2013,2014,2015,2016,2017,2018,2022],
+    avg:   [64.6,64.6,64.6,64.6,76.2,76.2,76.2,76.2,70.3],
+    n:     [14,14,14,14,42,42,42,42,51],
+    comp:  [50.0,50.0,50.0,50.0,28.6,28.6,28.6,28.6,41.2],
+    minerals: [
+      ['Dysprosium',100],['Erbium',100],['Europium',100],
+      ['Holmium',100],['Lutetium',100],['Terbium',100],
+      ['Gallium',94],['Ruthenium',94],['Iridium',93],
+      ['Niobium',92],['Magnesium',91],['Beryllium',88],
+      ['Tungsten',86],['Neodymium',85],['Phosphorus',74],
+      ['Platinum',71],['Bismuth',70],['Aluminium',28],
+      ['Copper',28],['Manganese',29],
+    ],
+    note: '⚠ Approach B caveat: n jumps from 14 (2014 EC list) → 42 (2017 list) → 51 (2023 list). The apparent "improvement" from 76% → 70% partly reflects EC adding more diverse minerals, not genuine EU de-risking. Interpret with caution.',
+  },
+};
+
+// ─────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────
+let currentDim = 'extraction';
+let trendChart = null;
+
+// ─────────────────────────────────────────────────────────────
+// RENDER TABS
+// ─────────────────────────────────────────────────────────────
+function renderTabs() {
+  const bar = document.getElementById('tabBar');
+  bar.innerHTML = Object.entries(DIMS).map(([key, d]) => `
+    <button class="tab-btn ${key === currentDim ? 'active' : ''}"
+            data-key="${key}"
+            style="${key === currentDim ? `background:${d.color}` : ''}">
+      ${d.label}
+    </button>
+  `).join('');
+  bar.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchDim(btn.dataset.key));
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+// RENDER SUMMARY CARDS
+// ─────────────────────────────────────────────────────────────
+function renderCards(d) {
+  const last    = d.avg.length - 1;
+  const latestY = d.years[last];
+  const latestA = d.avg[last];
+  const latestC = d.comp[last];
+  const latestN = d.n[last];
+  const met     = d.direction === 'higher' ? latestA >= d.target : latestA <= d.target;
+  const gap     = d.direction === 'higher'
+                  ? Math.max(0, d.target - latestA)
+                  : Math.max(0, latestA - d.target);
+  const trend   = d.avg[last] - d.avg[0];
+  const trendGood = d.direction === 'higher' ? trend > 0 : trend < 0;
+  const trendSign = trend >= 0 ? '+' : '';
+
+  const cards = [
+    {
+      label: `Average (${latestY})`,
+      value: latestA.toFixed(1) + '%',
+      sub: `target ${d.targetLabel}`,
+      badge: met ? '✓ On track' : '✗ Behind target',
+      badgeClass: met ? 'badge-green' : 'badge-red',
+      valueColor: met ? '#2E7D32' : '#C62828',
+    },
+    {
+      label: 'Gap to CRMA target',
+      value: gap.toFixed(1) + 'pp',
+      sub: gap === 0 ? 'no gap remaining' : 'remaining shortfall',
+      badge: gap === 0 ? 'Met' : 'Not met',
+      badgeClass: gap === 0 ? 'badge-green' : 'badge-red',
+      valueColor: gap === 0 ? '#2E7D32' : '#C62828',
+    },
+    {
+      label: `Compliance rate (${latestY})`,
+      value: latestC.toFixed(0) + '%',
+      sub: `${Math.round(latestC / 100 * latestN)} / ${latestN} minerals`,
+      badge: latestC >= 50 ? 'Majority' : latestC >= 25 ? 'Minority' : 'Very low',
+      badgeClass: latestC >= 50 ? 'badge-green' : latestC >= 25 ? 'badge-amber' : 'badge-red',
+      valueColor: '#1a1a2e',
+    },
+    {
+      label: `Trend (${d.years[0]} → ${latestY})`,
+      value: trendSign + trend.toFixed(1) + 'pp',
+      sub: 'total change',
+      badge: trendGood ? 'Improving' : 'Worsening',
+      badgeClass: trendGood ? 'badge-green' : 'badge-red',
+      valueColor: trendGood ? '#2E7D32' : '#C62828',
+    },
+  ];
+
+  document.getElementById('summaryCards').innerHTML = cards.map(c => `
+    <div class="card">
+      <div class="card-label">${c.label}</div>
+      <div class="card-value" style="color:${c.valueColor}">${c.value}</div>
+      <div class="card-sub">${c.sub}</div>
+      <span class="badge ${c.badgeClass}">${c.badge}</span>
+    </div>
+  `).join('');
+}
+
+// ─────────────────────────────────────────────────────────────
+// RENDER TREND CHART
+// ─────────────────────────────────────────────────────────────
+function renderTrendChart(d) {
+  if (trendChart) { trendChart.destroy(); trendChart = null; }
+
+  document.getElementById('trendTitle').textContent = d.fullLabel + ' — trend 2011–2022';
+  document.getElementById('legendLine').style.background = d.color;
+
+  const maxY = Math.max(...d.avg) * 1.3;
+
+  trendChart = new Chart(document.getElementById('trendChart'), {
+    type: 'line',
+    data: {
+      labels: d.years,
+      datasets: [
+        {
+          label: 'EU average (%)',
+          data: d.avg,
+          borderColor: d.color,
+          backgroundColor: d.color + '22',
+          borderWidth: 2.5,
+          pointRadius: 5,
+          pointBackgroundColor: d.color,
+          pointBorderColor: '#fff',
+          pointBorderWidth: 1.5,
+          fill: true,
+          tension: 0.3,
+          yAxisID: 'y',
+        },
+        {
+          label: 'Compliance rate (%)',
+          data: d.comp,
+          borderColor: d.color,
+          borderWidth: 1.5,
+          borderDash: [6, 4],
+          pointRadius: 3,
+          pointBackgroundColor: '#fff',
+          pointBorderColor: d.color,
+          fill: false,
+          tension: 0.3,
+          yAxisID: 'y2',
+        },
+        {
+          label: 'CRMA target',
+          data: d.years.map(() => d.target),
+          borderColor: '#999',
+          borderWidth: 1.5,
+          borderDash: [3, 3],
+          pointRadius: 0,
+          fill: false,
+          yAxisID: 'y',
+        },
+        {
+          label: 'n (minerals)',
+          data: d.n,
+          borderColor: '#ccc',
+          borderWidth: 1,
+          borderDash: [2, 4],
+          pointRadius: 2,
+          pointBackgroundColor: '#ccc',
+          fill: false,
+          tension: 0,
+          yAxisID: 'y3',
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              if (ctx.datasetIndex === 3) return `Sample size: ${ctx.raw} minerals`;
+              if (ctx.datasetIndex === 2) return `CRMA target: ${ctx.raw}%`;
+              if (ctx.datasetIndex === 1) return `Compliance: ${ctx.raw}%`;
+              return `EU average: ${ctx.raw}%`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(0,0,0,0.05)' },
+          ticks: { font: { size: 11 }, color: '#666' }
+        },
+        y: {
+          min: 0, max: Math.max(maxY, d.target * 1.6),
+          grid: { color: 'rgba(0,0,0,0.05)' },
+          ticks: { font: { size: 11 }, color: '#666', callback: v => v + '%' }
+        },
+        y2: {
+          position: 'right', min: 0, max: 100,
+          grid: { display: false },
+          ticks: { font: { size: 10 }, color: '#aaa', callback: v => v + '%' },
+          title: { display: true, text: 'Compliance %', font: { size: 10 }, color: '#aaa' }
+        },
+        y3: {
+          display: false, min: 0, max: 120,
+        }
+      }
+    }
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+// RENDER MINERAL BARS
+// ─────────────────────────────────────────────────────────────
+function renderBars(d) {
+  const sorted  = [...d.minerals].sort((a, b) => b[1] - a[1]);
+  const maxVal  = Math.max(...sorted.map(m => m[1]), d.target * 1.2);
+  const tgtPct  = (d.target / maxVal) * 100;
+
+  const rows = sorted.map(([name, val]) => {
+    const meets = d.direction === 'higher' ? val >= d.target : val <= d.target;
+    const barW  = (val / maxVal) * 100;
+    const barColor = meets ? d.color : '#E0E0E0';
+    const valColor = meets ? d.color : '#C62828';
+    const tick     = meets ? '✓' : '✗';
+    const tickColor= meets ? '#2E7D32' : '#C62828';
+
+    return `<div class="bar-row">
+      <span class="bar-mineral" title="${name}">${name}</span>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${barW.toFixed(1)}%;background:${barColor};opacity:0.8"></div>
+        <div class="bar-target-line" style="left:${tgtPct.toFixed(1)}%"></div>
+      </div>
+      <span class="bar-val" style="color:${valColor}">${val}%</span>
+      <span class="bar-tick" style="color:${tickColor}">${tick}</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('mineralBars').innerHTML = rows;
+
+  document.getElementById('barLegend').innerHTML = `
+    <div class="legend-item">
+      <div class="legend-swatch" style="background:${d.color};opacity:0.8"></div>
+      <span>Meets target (${d.targetLabel})</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-swatch" style="background:#E0E0E0"></div>
+      <span>Below target</span>
+    </div>
+    <div class="legend-item">
+      <div style="width:12px;height:12px;border-left:2px dashed #666;"></div>
+      <span>Target line</span>
+    </div>
+  `;
+}
+
+// ─────────────────────────────────────────────────────────────
+// RENDER NOTE
+// ─────────────────────────────────────────────────────────────
+function renderNote(d) {
+  document.getElementById('dataNote').textContent = '⚠ Approach B — available sample: ' + d.note;
+}
+
+// ─────────────────────────────────────────────────────────────
+// SWITCH DIMENSION
+// ─────────────────────────────────────────────────────────────
+function switchDim(key) {
+  currentDim = key;
+  const d = DIMS[key];
+  renderTabs();
+  renderCards(d);
+  renderTrendChart(d);
+  renderBars(d);
+  renderNote(d);
+}
+
+// ─────────────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────────────
+switchDim('extraction');
+</script>
+</body>
+</html>
